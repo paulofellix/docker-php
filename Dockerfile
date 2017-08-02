@@ -35,6 +35,24 @@ RUN php composer-setup.php
 RUN php -r "unlink('composer-setup.php');"
 RUN mv composer.phar /usr/local/bin/composer
 
+# Configure apache to laravel/lumen
+RUN { \
+        echo '<VirtualHost *:80>'; \
+        echo '   ServerName app.localhost.com'; \
+        echo '   ServerAlias www.localhost.com'; \
+        echo '   ServerAdmin webmaster@localhost.com'; \
+        echo '   DocumentRoot "/var/www/app/public"'; \
+        echo '   <Directory "/var/www/app/public">'; \
+        echo '       AllowOverride all'; \
+        echo '   </Directory>'; \
+        echo '   ErrorLog ${APACHE_LOG_DIR}/error.log'; \
+        echo '   CustomLog ${APACHE_LOG_DIR}/access.log combined'; \
+        echo '</VirtualHost>' ; \
+    } | tee /etc/apache2/sites-available/app.conf \
+    && a2ensite app && a2dissite 000-default \
+    && a2enmod rewrite \
+    && mkdir -p /var/www/app/public
+
 # install locales
 RUN apt-get install -y locales && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
     && service apache2 restart \
