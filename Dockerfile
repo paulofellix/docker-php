@@ -2,7 +2,7 @@ FROM php:7.1-apache
 
 # install requirements for laravel/lumen
 RUN apt-get update && apt-get install -y curl git unzip libaio1 unixodbc-dev libmcrypt-dev libxml2-dev apt-transport-https zlib1g-dev
-RUN docker-php-ext-install mbstring mcrypt xml zip pdo mysqli pdo_mysql
+RUN docker-php-ext-install mbstring mcrypt xml zip pdo mysqli pdo_mysql soap
 
 # install Microsoft ODBC Driver 13.1 for SQL Server
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
