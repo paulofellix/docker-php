@@ -9,8 +9,6 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install msodbcsql \
-    # # optional: for bcp and sqlcmd
-    # && ACCEPT_EULA=Y apt-get install mssql-tools \
     && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile \
     && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 
@@ -33,24 +31,16 @@ RUN mkdir -p /opt/oracle \
     && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/opt/oracle/instantclient,12.1 \
     && docker-php-ext-install pdo_oci
 
+# install composer
+RUN /usr/bin/curl -sS https://getcomposer.org/installer | php
+RUN /bin/mv composer.phar /usr/local/bin/composer
+RUN /usr/local/bin/composer create-project laravel/laravel /var/www/app --prefer-dist
+RUN /bin/chown www-data:www-data -R /var/www/app/storage /var/www/app/bootstrap/cache
+
 
 # Configure apache to laravel/lumen
-RUN { \
-        echo '<VirtualHost *:80>'; \
-        echo '   ServerName app.localhost.com'; \
-        echo '   ServerAlias www.localhost.com'; \
-        echo '   ServerAdmin webmaster@localhost.com'; \
-        echo '   DocumentRoot "/var/www/app/public"'; \
-        echo '   <Directory "/var/www/app/public">'; \
-        echo '       AllowOverride all'; \
-        echo '   </Directory>'; \
-        echo '   ErrorLog ${APACHE_LOG_DIR}/error.log'; \
-        echo '   CustomLog ${APACHE_LOG_DIR}/access.log combined'; \
-        echo '</VirtualHost>' ; \
-    } | tee /etc/apache2/sites-available/app.conf \
-    && a2ensite app && a2dissite 000-default \
-    && a2enmod rewrite \
-    && mkdir -p /var/www/app/public
+COPY 000-laravel.conf /etc/apache2/sites-available/
+RUN a2dissite 000-default && a2enmod rewrite &&a2ensite 000-laravel
 
 # install locales
 RUN apt-get install -y locales && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
