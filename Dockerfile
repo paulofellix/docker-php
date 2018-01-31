@@ -34,8 +34,8 @@ RUN mkdir -p /opt/oracle \
 # install composer
 RUN /usr/bin/curl -sS https://getcomposer.org/installer | php
 RUN /bin/mv composer.phar /usr/local/bin/composer
-RUN /usr/local/bin/composer create-project laravel/laravel /var/www/app --prefer-dist
-RUN /bin/chown www-data:www-data -R /var/www/app/storage /var/www/app/bootstrap/cache
+RUN /usr/local/bin/composer create-project laravel/lumen /var/www/app --prefer-dist
+RUN /bin/chown www-data:www-data -R /var/www/app/storage
 
 
 # Configure apache to laravel/lumen
